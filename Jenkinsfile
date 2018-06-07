@@ -18,14 +18,14 @@ pipeline {
           HELM_RELEASE = "$PREVIEW_NAMESPACE".toLowerCase()
         }
         steps {
-          container('rust') {
+          container('jx-base') {
             sh 'export VERSION=$PREVIEW_VERSION && skaffold run -f skaffold.yaml'
             sh "jx step validate --min-jx-version 1.2.36"
             sh "jx step post build --image \$JENKINS_X_DOCKER_REGISTRY_SERVICE_HOST:\$JENKINS_X_DOCKER_REGISTRY_SERVICE_PORT/$ORG/$APP_NAME:$PREVIEW_VERSION"
           }
 
           dir ('./charts/preview') {
-           container('rust') {
+           container('jx-base') {
              sh "make preview"
              sh "jx preview --app $APP_NAME --dir ../.."
            }
@@ -37,7 +37,7 @@ pipeline {
           branch 'master'
         }
         steps {
-          container('rust') {
+          container('jx-base') {
             // ensure we're not on a detached head
             sh "git checkout master"
             sh "git config --global credential.helper store"
@@ -51,7 +51,7 @@ pipeline {
               sh "make tag"
             }
           }
-          container('rust') {
+          container('jx-base') {
             sh 'export VERSION=`cat VERSION` && skaffold run -f skaffold.yaml'
             sh "jx step validate --min-jx-version 1.2.36"
             sh "jx step post build --image \$JENKINS_X_DOCKER_REGISTRY_SERVICE_HOST:\$JENKINS_X_DOCKER_REGISTRY_SERVICE_PORT/$ORG/$APP_NAME:\$(cat VERSION)"
@@ -64,7 +64,7 @@ pipeline {
         }
         steps {
           dir ('./charts/dotnet-example') {
-            container('rust') {
+            container('jx-base') {
               sh 'jx step changelog --version \$(cat ../../VERSION)'
 
               // release the helm chart
