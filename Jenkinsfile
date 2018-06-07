@@ -47,7 +47,7 @@ pipeline {
             sh "echo \$(jx-release-version) > VERSION"
           }
           dir ('./charts/dotnet-example') {
-            container('dotnet') {
+            container('jx-base') {
               sh "make tag"
             }
           }
